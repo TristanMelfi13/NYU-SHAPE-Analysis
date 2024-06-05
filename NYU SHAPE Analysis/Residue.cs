@@ -8,8 +8,6 @@ namespace NYU_SHAPE_Analysis
 {
     internal class Residue
     {
-        
-
         private string ResidueName = "";
 
         private LinkedList<Atom> AtomsInResidue = new LinkedList<Atom>();

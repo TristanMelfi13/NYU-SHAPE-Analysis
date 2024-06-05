@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace NYU_SHAPE_Analysis
 {
@@ -68,27 +69,22 @@ namespace NYU_SHAPE_Analysis
             LinkedList<Atom> CurrentResidueAtoms = CurrentResidue.GetAtomList();
             string Path = @"Outputs\" + CurrentResidueName;
             System.IO.Directory.CreateDirectory(Path);
-
             // First Things First Calculate allllll Da Intranucleotide lengths
             foreach (Atom atom1 in CurrentResidueAtoms)
             {
-                string CurrentFile = Path + "\\" + atom1.GetAtomName();
+                string CurrentFile = Path + "\\" + atom1.GetAtomName() + ".txt";
+                LinkedList<string> Data = new LinkedList<string>();
                 foreach(Residue residue in ListOfAllResidues)
                 {
                     foreach(Atom atom2 in residue.GetAtomList())
                     {
                         double dist = Distance(atom1.GetAtomCoords(), atom2.GetAtomCoords());
+                        string MeowMeow = CurrentResidue.GetName() + "\t" + atom1.GetAtomName() + "\t" + residue.GetName() + "\t" + atom2.GetAtomName() + "\t" + dist + "\n";
+                        Data.AddLast(MeowMeow);
                     }
                 }
+                System.IO.File.WriteAllText(CurrentFile, string.Join("\n", Data));
             }
-
-
-
-
-
-
-
-
         }
 
         static void Main()
