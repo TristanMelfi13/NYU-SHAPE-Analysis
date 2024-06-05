@@ -15,7 +15,7 @@ namespace NYU_SHAPE_Analysis
         static string GetFullMoleculeGraph()
         {
             string pythonExePath = "python.exe"; // Set the correct path
-            string scriptPath = "ConsecutiveAtomPairs.py"; // Set the path to your Python script
+            string scriptPath = "BioPythonPDBGetter.py"; // Set the path to your Python script
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -72,7 +72,7 @@ namespace NYU_SHAPE_Analysis
             // First Things First Calculate allllll Da Intranucleotide lengths
             foreach (Atom atom1 in CurrentResidueAtoms)
             {
-                string CurrentFile = Path + "\\" + atom1.GetAtomName() + ".txt";
+                string CurrentFile = Path + "\\" + atom1.GetAtomName() + ".csv";
                 LinkedList<string> Data = new LinkedList<string>();
                 foreach(Residue residue in ListOfAllResidues)
                 {
@@ -96,8 +96,6 @@ namespace NYU_SHAPE_Analysis
             LinkedList<Thread> Workers = new LinkedList<Thread>();
             System.IO.Directory.CreateDirectory("Outputs");
 
-
-
             foreach (Residue r in ListOfResidues)
             {
                 Thread NewThread = new Thread(() => DoMath(r, ListOfResidues));
@@ -114,7 +112,6 @@ namespace NYU_SHAPE_Analysis
             {
                 thread.Join();
             }
-
 
             Console.WriteLine("Execution time: " + sw.ElapsedMilliseconds / 1000.0);
             // Make a thread for each residue
