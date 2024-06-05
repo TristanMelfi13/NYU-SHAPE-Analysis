@@ -1,11 +1,6 @@
 from Bio import *
 from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB.Polypeptide import PPBuilder
-import time
-from time import sleep
-import multiprocessing
-from multiprocessing import Process
-import os
 
 class ResiGraph:
     Name = ""
@@ -258,7 +253,6 @@ def FormatGraphsForC(CurrentResidue):
 
 
 if __name__ == '__main__':
-    StartTIme = time.time()
     structure = PDBParser().get_structure("2n7x", r"C:\Users\Trist\Downloads\2n7x.pdb")
     ListOfResidueGraphs = BuildMoleculeGraph(structure)
     
