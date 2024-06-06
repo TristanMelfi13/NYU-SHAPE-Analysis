@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,6 +17,27 @@ namespace NYU_SHAPE_Analysis
         {
             string pythonExePath = "python.exe"; // Set the correct path
             string scriptPath = "BioPythonPDBGetter.py"; // Set the path to your Python script
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = pythonExePath,
+                Arguments = scriptPath,
+                UseShellExecute = false,
+                RedirectStandardOutput = true
+            };
+
+            using (Process process = new Process { StartInfo = startInfo })
+            {
+                process.Start();
+                string output = process.StandardOutput.ReadToEnd();
+                return output;
+            }
+        }
+
+        static string GetReactivityData()
+        {
+            string pythonExePath = "python.exe"; // Set the correct path
+            string scriptPath = "ReactivityFileGetter.py"; // Set the path to your Python script
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -87,6 +109,51 @@ namespace NYU_SHAPE_Analysis
             }
         }
 
+        static string[] SubSplit(string ThingToSplit, char Delimeter)
+        {
+            return ThingToSplit.Split(new char[] { Delimeter });
+        }
+
+
+        static ExperimentalData CreateDataClass(string DataForReaction)
+        {
+            ExperimentalData ToReturn = new ExperimentalData(DataForReaction.Substring(0, DataForReaction.IndexOf("\n")));
+            string[] ActualValues = DataForReaction.Split("%");
+            for (int i = 1; i < ActualValues.Length; i++)
+            {
+                string str = string.Join(" ", SubSplit(ActualValues[i], '%'));
+                string[] AlmostCleaned = SubSplit(str, '\n');
+
+                // Concentration is AlmostCleaned[0]
+
+                string Concentration = AlmostCleaned[0];
+
+                
+                LinkedList<Tuple<string, double>> Results = new LinkedList<Tuple<string, double>>();
+                for (int j = 1; j < AlmostCleaned.Length; j++)
+                {
+                    string[] FinalSplit = SubSplit(AlmostCleaned[j], ',');
+                    try
+                    {
+                        var NucleotideValuePair = new Tuple<string, double>(FinalSplit[0], double.Parse(FinalSplit[1]));
+                        Results.AddLast(NucleotideValuePair);
+                    }
+                    catch (Exception)
+                    {
+                        
+                    }
+                }
+
+                if (Concentration.Contains("nan"))
+                {
+                    return ToReturn;
+                }
+                ToReturn.AddToResults(Concentration.Substring(Concentration.IndexOf("_") + 1), Results);
+            }
+
+            return ToReturn;
+        }
+
         static void Main()
         {
             Stopwatch sw = Stopwatch.StartNew();
@@ -103,12 +170,42 @@ namespace NYU_SHAPE_Analysis
                 Workers.AddLast(NewThread);
             }
 
-            foreach(Thread thread in Workers)
+            foreach (Thread thread in Workers)
             {
                 thread.Start();
             }
 
-            foreach(Thread thread in Workers)
+            foreach (Thread thread in Workers)
+            {
+                thread.Join();
+            }
+
+            Workers.Clear();
+            LinkedList<ExperimentalData> ExpData = new LinkedList<ExperimentalData>();
+
+            string ReactivityData = GetReactivityData();
+            string[] data = ReactivityData.Split("*");
+
+
+            
+            
+
+
+
+            foreach(string d in data)
+            {
+                Thread NewThread = new Thread(() => CreateDataClass(d));
+            }
+
+
+
+
+            foreach (Thread thread in Workers)
+            {
+                thread.Start();
+            }
+
+            foreach (Thread thread in Workers)
             {
                 thread.Join();
             }
